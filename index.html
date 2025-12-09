@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Assistente BCS - Gioco lecito</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f7;
+    }
+
+    .bcs-chat-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: #111827;
+      color: #f9fafb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.35);
+      z-index: 9999;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .bcs-chat-button:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.4);
+      background: #0f172a;
+    }
+
+    .bcs-chat-window {
+      position: fixed;
+      bottom: 100px;
+      right: 20px;
+      width: 360px;
+      max-width: 95vw;
+      height: 480px;
+      max-height: 80vh;
+      background: #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.35);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 9998;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .bcs-chat-window.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .bcs-chat-header {
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #111827, #1f2937);
+      color: #f9fafb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .bcs-chat-header-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .bcs-chat-header-sub {
+      font-size: 11px;
+      opacity: 0.8;
+    }
+    .bcs-chat-close {
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      transition: background 0.15s ease;
+    }
+    .bcs-chat-close:hover {
+      background: rgba(15, 23, 42, 0.35);
+    }
+
+    .bcs-chat-messages {
+      flex: 1;
+      padding: 12px 12px 8px;
+      background: #f9fafb;
+      overflow-y: auto;
+      font-size: 13px;
+    }
+
+    .bcs-msg {
+      margin-bottom: 8px;
+      display: flex;
+    }
+    .bcs-msg-user {
+      justify-content: flex-end;
+    }
+    .bcs-msg-bot {
+      justify-content: flex-start;
+    }
+    .bcs-bubble {
+      max-width: 80%;
+      padding: 8px 10px;
+      border-radius: 12px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+    .bcs-bubble-user {
+      background: #111827;
+      color: #f9fafb;
+      border-bottom-right-radius: 4px;
+    }
+    .bcs-bubble-bot {
+      background: #e5e7eb;
+      color: #111827;
+      border-bottom-left-radius: 4px;
+    }
+
+    .bcs-chat-input-area {
+      padding: 8px 10px;
+      border-top: 1px solid #e5e7eb;
+      background: #ffffff;
+      display: flex;
+      gap: 6px;
+    }
+    .bcs-input {
+      flex: 1;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      padding: 8px 12px;
+      font-size: 13px;
+      outline: none;
+    }
+    .bcs-input:focus {
+      border-color: #111827;
+    }
+    .bcs-send-btn {
+      border-radius: 999px;
+      background: #111827;
+      color: #f9fafb;
+      border: none;
+      padding: 0 12px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .bcs-send-btn:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    .bcs-typing {
+      font-size: 11px;
+      color: #6b7280;
+      padding: 0 12px 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bcs-chat-button" id="bcsChatButton" title="Apri Assistente BCS">
+    💬
+  </div>
+
+  <div class="bcs-chat-window" id="bcsChatWindow">
+    <div class="bcs-chat-header">
+      <div>
+        <div class="bcs-chat-header-title">Assistente BCS</div>
+        <div class="bcs-chat-header-sub">Gioco lecito - Art. 110 TULPS</div>
+      </div>
+      <div class="bcs-chat-close" id="bcsChatClose">✗</div>
+    </div>
+    <div class="bcs-chat-messages" id="bcsChatMessages"></div>
+    <div class="bcs-typing" id="bcsTyping" style="display:none;">Assistente BCS sta scrivendo…</div>
+    <div class="bcs-chat-input-area">
+      <input
+        id="bcsInput"
+        class="bcs-input"
+        type="text"
+        placeholder="Fai una domanda su AWP, VLT, PREU, ENADA…"
+      />
+      <button id="bcsSend" class="bcs-send-btn">
+        Invia
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const WEBHOOK_URL = "https://n8n.your-domain.com/webhook/assistente-bcs";
+
+    const btn = document.getElementById("bcsChatButton");
+    const win = document.getElementById("bcsChatWindow");
+    const closeBtn = document.getElementById("bcsChatClose");
+    const messagesEl = document.getElementById("bcsChatMessages");
+    const typingEl = document.getElementById("bcsTyping");
+    const inputEl = document.getElementById("bcsInput");
+    const sendBtn = document.getElementById("bcsSend");
+
+    let sessionId = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+
+    function appendMessage(text, sender = "bot") {
+      const row = document.createElement("div");
+      row.className = "bcs-msg " + (sender === "user" ? "bcs-msg-user" : "bcs-msg-bot");
+
+      const bubble = document.createElement("div");
+      bubble.className =
+        "bcs-bubble " + (sender === "user" ? "bcs-bubble-user" : "bcs-bubble-bot");
+      bubble.textContent = text;
+
+      row.appendChild(bubble);
+      messagesEl.appendChild(row);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function setTyping(visible) {
+      typingEl.style.display = visible ? "block" : "none";
+    }
+
+    async function sendMessage() {
+      const text = inputEl.value.trim();
+      if (!text) return;
+      appendMessage(text, "user");
+      inputEl.value = "";
+      setTyping(true);
+      sendBtn.disabled = true;
+
+      try {
+        const res = await fetch(WEBHOOK_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-session-id": sessionId
+          },
+          body: JSON.stringify({
+            message: text,
+            sessionId
+          })
+        });
+
+        const data = await res.json().catch(() => ({}));
+        const reply =
+          (data && (data.reply || data.answer || data.text)) ||
+          "Al momento non riesco a rispondere, riprova tra poco.";
+        appendMessage(reply, "bot");
+      } catch (err) {
+        appendMessage("Errore di connessione con l'assistente. Controlla il servizio n8n.", "bot");
+      } finally {
+        setTyping(false);
+        sendBtn.disabled = false;
+        inputEl.focus();
+      }
+    }
+
+    btn.addEventListener("click", () => {
+      win.classList.toggle("open");
+    });
+
+    closeBtn.addEventListener("click", () => {
+      win.classList.remove("open");
+    });
+
+    sendBtn.addEventListener("click", sendMessage);
+
+    inputEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    appendMessage(
+      "Ciao, sono l'Assistente BCS. Posso aiutarti su apparecchi art. 110 TULPS, PREU, RIES, dematerializzazione, riordino e fiere (es. ENADA 2026)."
+    , "bot");
+  </script>
+</body>
+</html>
